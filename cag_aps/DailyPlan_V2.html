@@ -126,6 +126,7 @@
     }
 
     // Fetch a JS file as text and eval it (bypasses MIME type restriction from raw.githubusercontent.com)
+    // Also promotes let/const declarations to global scope (let inside eval is block-scoped)
     function fetchAndEval(url) {
       return fetch(url)
         .then(response => {
@@ -133,7 +134,9 @@
           return response.text();
         })
         .then(code => {
-          eval(code);
+          // Replace `let` and `const` with `var` so variables survive outside eval scope
+          const globalCode = code.replace(/\blet\b/g, 'var').replace(/\bconst\b/g, 'var');
+          eval(globalCode);
         });
     }
 
